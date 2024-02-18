@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height: 200,
                   width: 200,
-                  child: TasksPieChart(
+                  child: doneWillDoTasksCount + pendingWillDoTasksCount ==0 ? const Text('Please add "Will Do" tasks for analytics...') : TasksPieChart(
                     doneTasksCount: doneWillDoTasksCount,
                     pendingTasksCount: pendingWillDoTasksCount,
                     doneText: 'Completed',
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   height: 200,
                   width: 200,
-                  child: TasksPieChart(
+                  child: doneWillNotDoTasksCount+pendingWillNotDoTasksCount == 0? const Text('Please add "Will Not Do" tasks for analytics...'): TasksPieChart(
                     doneTasksCount: doneWillNotDoTasksCount,
                     pendingTasksCount: pendingWillNotDoTasksCount,
                     doneText: 'Avoided',
@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.green,
                 ),
                 Column(
-                  children: topWillDoTasks
+                  children: topWillDoTasks.isEmpty? [const Text("No habit streak greater than 7 yet...")] : topWillDoTasks
                       .map((task) =>
                           Text('${task.title} - Streak: ${task.streak}',
                               style: const TextStyle(
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     tooltipMessage: 'Habits avoided for more than 7 days',
                     color: Colors.redAccent),
                 Column(
-                  children: topWillNotDoTasks
+                  children: topWillNotDoTasks.isEmpty?[Text('No habit avoided for more than 7 days...')]: topWillNotDoTasks
                       .map((task) =>
                           Text('${task.title} - Streak: ${task.streak}',
                               style: const TextStyle(
