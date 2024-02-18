@@ -11,7 +11,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<AppState>();
+    var appState = context.watch<WillWillNotAppState>();
     var willDoTasks = appState.willDosMasterList;
     var willNotDoTasks = appState.willNotDosMasterList;
 

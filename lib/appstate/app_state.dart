@@ -8,12 +8,12 @@ import '../models/task.dart';
 enum TypeOfTask { willDo, willNotDo }
 enum uimode { dark, light }
 
-class AppState extends ChangeNotifier {
+class WillWillNotAppState extends ChangeNotifier {
   var willDosMasterList = <Task>[];
   var willNotDosMasterList = <Task>[];
   var uiMode = uimode.light;
 
-  AppState() {
+  WillWillNotAppState() {
     loadTasksFromFile();
     var brightness =
     SchedulerBinding.instance.platformDispatcher.platformBrightness;
@@ -106,7 +106,7 @@ class AppState extends ChangeNotifier {
       itemToBeToggled.timeStamp = DateTime.now().date();
       var message = typeOfTask == TypeOfTask.willDo
           ? 'Great job! Keep it up!'
-          : 'It\'s okay, try again not to do it tomorrow!';
+          : 'Hmm, that\'s not good! Here\'s your punishment!';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),

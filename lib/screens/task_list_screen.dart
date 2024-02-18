@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:will_willnot/configuration/ads_config.dart';
 import '../appstate/app_state.dart';
 import 'package:provider/provider.dart';
 
@@ -18,9 +20,59 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  InterstitialAd? _interstitialAd;
+
+  void loadAd() {
+    InterstitialAd.load(
+        adUnitId: AdsConfig.interstitialAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          // Called when an ad is successfully received.
+          onAdLoaded: (ad) {
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+                // Called when the ad showed the full screen content.
+                onAdShowedFullScreenContent: (ad) {},
+                // Called when an impression occurs on the ad.
+                onAdImpression: (ad) {},
+                // Called when the ad failed to show full screen content.
+                onAdFailedToShowFullScreenContent: (ad, err) {
+                  // Dispose the ad here to free resources.
+                  ad.dispose();
+                },
+                // Called when the ad dismissed full screen content.
+                onAdDismissedFullScreenContent: (ad) {
+                  // Dispose the ad here to free resources.
+                  ad.dispose();
+                  loadAd();
+                },
+                // Called when a click is recorded for an ad.
+                onAdClicked: (ad) {});
+
+            debugPrint('$ad loaded.');
+            // Keep a reference to the ad so you can show it later.
+            _interstitialAd = ad;
+          },
+          // Called when an ad request failed.
+          onAdFailedToLoad: (LoadAdError error) {
+            debugPrint('InterstitialAd failed to load: $error');
+          },
+        ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadAd();
+  }
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<AppState>();
+    var appState = context.watch<WillWillNotAppState>();
     var masterList = widget.typeOfTask == TypeOfTask.willDo
         ? appState.willDosMasterList
         : appState.willNotDosMasterList;
@@ -42,19 +94,29 @@ class _TaskListScreenState extends State<TaskListScreen> {
             title: Text(item.title),
             leading: Checkbox(
               value: item.isDone,
-              onChanged: (bool? value) {
-                appState.toggleChecked(index, context, typeOfTask: widget.typeOfTask);
+              onChanged: (bool? value) async {
+                appState.toggleChecked(index, context,
+                    typeOfTask: widget.typeOfTask);
+                if(widget.typeOfTask == TypeOfTask.willNotDo && item.isDone){
+                  if (_interstitialAd != null) {
+                    await Future.delayed(const Duration(seconds: 2));
+                    _interstitialAd!.show();
+                  } else {
+                    debugPrint('InterstitialAd is null');
+                  }
+                }
               },
-            activeColor: widget.typeOfTask == TypeOfTask.willDo
-                ? Colors.green
-                : Colors.redAccent,
+              activeColor: widget.typeOfTask == TypeOfTask.willDo
+                  ? Colors.green
+                  : Colors.redAccent,
             ),
             //Show the streak
             subtitle: Text(
               'Streak: ${item.streak}',
-              style: TextStyle(color: widget.typeOfTask == TypeOfTask.willDo
-                  ? Colors.green
-                  : Colors.redAccent),
+              style: TextStyle(
+                  color: widget.typeOfTask == TypeOfTask.willDo
+                      ? Colors.green
+                      : Colors.redAccent),
             ),
             // Trailing icon button to delete the item
             trailing: IconButton(
@@ -70,7 +132,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   void _showAddItemDialog(
     BuildContext context,
-    AppState appState,
+    WillWillNotAppState appState,
   ) {
     final TextEditingController _textFieldController = TextEditingController();
     showDialog(
